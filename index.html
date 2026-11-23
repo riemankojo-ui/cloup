@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Cloup</title>
+ 
+
+<style>
+    /* =========================================
+       ALL CSS IS IN HERE NOW (NO SEPARATE FILE)
+       ========================================= */
+    :root {
+  --bg: #050505;           /* Not absolute pure black, slightly softer */
+  --surface: #141414;      /* Softer dark gray for cards */
+  --surface-light: #1F1F1F;/* Soft lift for secondary buttons */
+  --text-main: #D4D4D4;    /* Soft warm-white, easier on the eyes */
+  --text-muted: #888888;   /* Muted gray for secondary text */
+  --border: #2A2A2A;       /* Soft border, not too sharp */
+  --accent: #4ADE80;       /* Softer, pastel green */
+  --warning: #FCD34D;      /* Soft pastel amber */
+}
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+  background-color: var(--bg);
+  color: var(--text-main);
+  overflow: hidden;
+  background-image: linear-gradient(180deg, #1C1C1E 0%, #121212 100%); /* Adds a very soft gradient */
+}
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      padding-bottom: 70px;
+    }
+
+    /* SCREENS */
+    .screen {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    /* TYPOGRAPHY */
+    .large-title h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      margin-top: 10px;
+      color: var(--text-main);
+    }
+
+    .section-title {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin: 24px 0 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    /* STORAGE METER */
+    .storage-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .storage-amount { font-weight: 600; }
+    
+    .progress-track {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      width: 40%;
+    }
+
+    .upgrade-btn {
+      background: none;
+      border: none;
+      color: var(--warning);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 0;
+    }
+
+    /* GRID */
+    .grid-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .category-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .icon { font-size: 24px; margin-bottom: 8px; }
+    .cat-name { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
+    .cat-stat { font-size: 20px; font-weight: 700; color: var(--text-main); }
+
+    /* BUTTONS */
+    .btn-primary, .btn-secondary {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      margin-top: 10px;
+      transition: transform 0.1s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+  background: var(--accent);
+  color: #000000; /* Black text on green */
+}
+
+    .btn-secondary {
+      background: var(--surface-light);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .btn-primary:active, .btn-secondary:active {
+      transform: scale(0.97);
+    }
+
+    .last-backup {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    /* RESTORE EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .drop-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state h2 { margin-bottom: 8px; font-size: 20px; color: var(--text-main); }
+    .empty-state p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+
+    /* SETTINGS LIST */
+    .list-card { padding: 0; overflow: hidden; }
+    
+    .list-item {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+      color: var(--text-main);
+    }
+    
+    .list-item:last-child { border-bottom: none; }
+    .list-item span { color: var(--text-muted); }
+
+    /* BOTTOM TABS */
+    .bottom-tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: #2C2C2E; /* Soft gray tab bar */
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .tab {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-muted);
+      gap: 4px;
+      width: 60px;
+      cursor: pointer;
+    }
+
+    .tab.active { color: var(--accent); }
+    .tab-icon { font-size: 22px; }
+    .tab-label { font-size: 11px; font-weight: 600; }
+
+    /* SPINNER OVERLAY */
+    #loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(28, 28, 30, 0.85); /* Soft gray transparent */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #loading-overlay.hidden { display: none; }
+
+    .spinner {
+      width: 56px;
+      height: 56px;
+      border: 4px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    #loading-overlay p {
+      margin-top: 16px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+      @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* --- NEW SVG ICON STYLES --- */
+  .tab-icon {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 2px;
+  }
+
+  .icon-svg {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 12px;
+    color: var(--accent); /* Makes the category icons soft green */
+  }
+
+  .drop-icon-svg {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 16px;
+    color: var(--text-muted);
+  }
+
+  /* Hides any old text emojis if left behind */
+  .icon, .drop-icon {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- SCREEN 1: HOME -->
+    <main id="screen-home" class="screen active">
+      <header class="large-title"><h1>Cloup</h1></header>
+
+      <div class="card storage-card">
+        <div class="storage-header">
+          <span>Storage</span>
+          <span class="storage-amount">0.8 / 2 GB</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill"></div>
+        </div>
+        <button class="upgrade-btn">Upgrade for more</button>
+      </div>
+
+      <h2 class="section-title">Backup Now</h2>
+      <div class="grid-2x2">
+  <div class="card category-card">
+    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+      <circle cx="12" cy="7" r="4"></circle>
+    </svg>
+    <div class="cat-name">Contacts</div>
+    <div class="cat-stat">342</div>
+  </div>
+  <div class="card category-card">
+    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <div class="cat-name">Files</div>
+    <div class="cat-stat">1.2 GB</div>
+  </div>
+  <div class="card category-card">
+  <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect>
+    <rect x="8" y="6" width="3" height="3" rx="1"></rect>
+    <rect x="13" y="6" width="3" height="3" rx="1"></rect>
+    <rect x="8" y="11" width="3" height="3" rx="1"></rect>
+    <rect x="13" y="11" width="3" height="3" rx="1"></rect>
+  </svg>
+  <div class="cat-name">Device Apps</div>
+  <div class="cat-stat">48 apps</div>
+</div>
+</div>
+
+      <button class="btn-primary" onclick="showLoading()">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 6px;">
+    <polyline points="23 4 23 10 17 10"></polyline>
+    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+  </svg>
+  BACKUP ALL NOW
+</button>
+      <p class="last-backup">Last backup: Today 2:14 PM</p>
+    </main>
+
+    <!-- SCREEN 2: RESTORE -->
+    <main id="screen-restore" class="screen">
+      <header class="large-title"><h1>Restore</h1></header>
+      <div class="card empty-state">
+        <svg class="drop-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
+  <polyline points="8 17 12 21 16 17"></polyline>
+  <line x1="12" y1="12" x2="12" y2="21"></line>
+</svg>
+        <h2>Restore to this phone</h2>
+        <p>Tap below to pull your files, contacts, and apps from the cloud.</p>
+        <button class="btn-secondary" onclick="showLoading()">DROP HERE</button>
+      </div>
+    </main>
+
+    <!-- SCREEN 3: SETTINGS -->
+    <main id="screen-settings" class="screen">
+      <header class="large-title"><h1>Settings</h1></header>
+      <div class="card list-card">
+        <div class="list-item">Account <span>+233 55 000 0000</span></div>
+        <div class="list-item">Plan <span>Free (2 GB)</span></div>
+        <div class="list-item">Restore History <span>›</span></div>
+        <div class="list-item">Help & Support <span>›</span></div>
+      </div>
+    </main>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay" class="hidden">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+<nav class="bottom-tabs">
+  <button class="tab active" onclick="switchTab('home', this)">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+    </svg>
+    <span class="tab-label">Home</span>
+  </button>
+  <button class="tab" onclick="switchTab('restore', this)">
+  <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"></path>
+    <polyline points="8 17 12 21 16 17"></polyline>
+    <line x1="12" y1="12" x2="12" y2="21"></line>
+  </svg>
+  <span class="tab-label">Restore</span>
+</button>
+  <button class="tab" onclick="switchTab('settings', this)">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    </svg>
+    <span class="tab-label">Settings</span>
+  </button>
+</nav>
+  </div>
+
+  <script>
+    // Tab switching logic
+    function switchTab(tabName, el) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      
+      document.getElementById(`screen-${tabName}`).classList.add('active');
+      el.classList.add('active');
+    }
+
+    // Spinner logic
+    function showLoading() {
+      const overlay = document.getElementById('loading-overlay');
+      overlay.classList.remove('hidden');
+      
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

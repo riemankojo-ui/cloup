@@ -1,0 +1,240 @@
+:root {
+  --bg: #000000;           /* Pure black */
+  --surface: #111111;      /* Soft black for cards */
+  --surface-light: #1A1A1A;/* Elevated surface */
+  --text-main: #F5F5F5;    /* Soft white */
+  --text-muted: #A0A0A0;   /* Gray */
+  --border: #262626;       /* Subtle border */
+  --accent: #34D399;       /* Green */
+  --warning: #FBBF24;      /* Amber */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* Removes blue highlight on tap */
+  user-select: none; /* Prevents text selection like a native app */
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden; /* Prevent whole page scroll */
+}
+
+/* APP CONTAINER */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  padding-bottom: 70px; /* Space for bottom tabs */
+}
+
+/* SCREENS */
+.screen {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.screen.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* TYPOGRAPHY & HEADERS */
+.large-title h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.section-title {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin: 24px 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* STORAGE METER */
+.storage-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.storage-amount { font-weight: 600; }
+.progress-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+}
+.upgrade-btn {
+  background: none;
+  border: none;
+  color: var(--warning);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0;
+}
+
+/* GRID */
+.grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.icon { font-size: 24px; margin-bottom: 8px; }
+.cat-name { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
+.cat-stat { font-size: 20px; font-weight: 700; }
+
+/* BUTTONS */
+.btn-primary, .btn-secondary {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  margin-top: 10px;
+  transition: transform 0.1s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+}
+
+.btn-secondary {
+  background: var(--surface-light);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+
+.btn-primary:active, .btn-secondary:active {
+  transform: scale(0.97); /* Native press effect */
+}
+
+.last-backup {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+/* RESTORE EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+.drop-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state h2 { margin-bottom: 8px; font-size: 20px; }
+.empty-state p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+
+/* SETTINGS LIST */
+.list-card { padding: 0; overflow: hidden; }
+.list-item {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+}
+.list-item:last-child { border-bottom: none; }
+.list-item span { color: var(--text-muted); }
+
+/* BOTTOM TABS */
+.bottom-tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: #0D0D0D;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom); /* For iPhone home bar */
+}
+
+.tab {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-muted);
+  gap: 4px;
+  width: 60px;
+}
+
+.tab.active { color: var(--accent); }
+.tab-icon { font-size: 22px; }
+.tab-label { font-size: 11px; font-weight: 600; }
+
+/* GOOGLE-STYLE SPINNER OVERLAY */
+#loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+#loading-overlay.hidden { display: none; }
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+#loading-overlay p {
+  margin-top: 16px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
