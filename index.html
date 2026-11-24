@@ -580,6 +580,69 @@
     overflow-y: auto;
     padding: 8px 12px 24px;
   }
+/* --- GOOGLE-STYLE SOFT SPINNER --- */
+  #loading-overlay {
+    background: rgba(5, 5, 5, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .spinner {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 0;
+    animation: spin 1.4s linear infinite;
+  }
+  .spinner svg { width: 100%; height: 100%; display: block; }
+  .spinner-arc {
+    stroke: #86EFAC;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-dasharray: 1, 126;
+    stroke-dashoffset: 0;
+    animation: arc 1.4s ease-in-out infinite;
+  }
+  @keyframes arc {
+    0%   { stroke-dasharray: 1, 126;  stroke-dashoffset: 0; }
+    50%  { stroke-dasharray: 90, 126; stroke-dashoffset: -35; }
+    100% { stroke-dasharray: 90, 126; stroke-dashoffset: -124; }
+  }
+/* --- BIGGER SPINNER, SOFT BLACK OVERLAY --- */
+  #loading-overlay {
+    background: rgba(20, 20, 20, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  .spinner {
+    width: 72px;
+    height: 72px;
+  }
+  .spinner-arc {
+    stroke-width: 3;
+  }
+/* --- NO BLUR, SMOOTH SOFT-BLACK SPINNER --- */
+  #loading-overlay {
+    background: rgba(20, 20, 20, 0.45);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .spinner {
+    animation: spin 1.8s linear infinite;
+    will-change: transform;
+    transform: translateZ(0);
+  }
+  .spinner-arc {
+    stroke: #3A3A3C;
+    animation: arc 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+/* --- FASTER SPINNER, SMALLER LOADING TEXT --- */
+  .spinner { animation-duration: 1s; }
+  .spinner-arc { animation-duration: 1s; }
+  #loading-overlay p {
+    font-size: 11px;
+    margin-top: 10px;
+    font-weight: 500;
+  }
 </style>
 </head>
 <body>
@@ -708,7 +771,9 @@
 
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay" class="hidden">
-      <div class="spinner"></div>
+      <div class="spinner">
+        <svg viewBox="0 0 48 48"><circle class="spinner-arc" cx="24" cy="24" r="20" fill="none"></circle></svg>
+      </div>
       <p>Loading...</p>
     </div>
 
@@ -745,6 +810,7 @@
 </nav>
   </div>
 
+  <script src="app-scanner.js"></script>
   <script>
     // Tab switching logic
     function switchTab(tabName, el) {
@@ -803,12 +869,10 @@
 
     // Opens the app's page in the Play Store
     function openPlayStore(pkg) {
-      const url = 'https://play.google.com/store/apps/details?id=' + encodeURIComponent(pkg);
-      // '_system' makes Capacitor/Android open it outside the WebView (Play Store app)
-      window.open(url, '_system');
+      return openPlayStoreNative(pkg);
     }
 
-    renderDeviceApps(PLACEHOLDER_APPS);
+    loadDeviceApps();
     renderMyPlayApps(PLACEHOLDER_APPS);
 
     // Device Apps categories (tap to open / close)
@@ -824,7 +888,7 @@
         document.getElementById('apps-view').classList.remove('hidden');
         document.querySelector('.apps-scroll').scrollTop = 0;
         overlay.classList.add('hidden');
-      }, 600);
+      }, 300);
     }
 
     function closeCategory() {
@@ -838,7 +902,7 @@
       
       setTimeout(() => {
         overlay.classList.add('hidden');
-      }, 2000);
+      }, 800);
     }
   </script>
 </body>

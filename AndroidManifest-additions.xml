@@ -1,0 +1,12 @@
+<!--
+  Add this INSIDE <manifest> in android/app/src/main/AndroidManifest.xml,
+  next to (not inside) the <application> tag.
+  It lets Cloup see the apps in the app drawer on Android 11+,
+  without the restricted QUERY_ALL_PACKAGES permission.
+-->
+<queries>
+    <intent>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent>
+</queries>
