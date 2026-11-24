@@ -422,6 +422,164 @@
   .category-panel { display: none; }
   .category-panel.active { display: block; }
   .category-panel .screen-sub { margin-top: 0; }
+/* --- COLLAPSIBLE CATEGORIES --- */
+  .category {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .category-header {
+    width: 100%;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    color: var(--text-main);
+    text-align: left;
+    cursor: pointer;
+  }
+  .category-title { display: block; font-size: 16px; font-weight: 600; }
+  .category-sub { display: block; font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .chevron {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+  .category.open .chevron { transform: rotate(90deg); }
+  .category-body { display: none; padding: 0 12px 12px; }
+  .category.open .category-body { display: block; }
+/* --- SOFT PHONE-SETTINGS STYLE --- */
+  .category {
+    border: none;
+    border-radius: 28px;
+    margin-bottom: 10px;
+  }
+  #screen-device .category:nth-of-type(1) { background: rgba(74, 222, 128, 0.08); }
+  #screen-device .category:nth-of-type(2) { background: rgba(96, 165, 250, 0.08); }
+
+  .category-header {
+    min-height: 72px;
+    padding: 14px 18px 14px 22px;
+    transition: background 0.15s;
+  }
+  .category-header:active { background: rgba(255, 255, 255, 0.04); }
+  .category-title { font-size: 17px; font-weight: 500; }
+  .category-sub { font-size: 13px; margin-top: 3px; }
+
+  .chevron {
+    box-sizing: border-box;
+    width: 34px;
+    height: 34px;
+    padding: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.07);
+  }
+  #screen-device .category:nth-of-type(1) .chevron { color: #4ADE80; }
+  #screen-device .category:nth-of-type(2) .chevron { color: #60A5FA; }
+
+  .category-body { padding: 0 10px 14px; }
+  .app-tile {
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+  }
+  .btn-reinstall {
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+  }
+/* --- SHOW ONLY THE OPEN CATEGORY --- */
+  #screen-device.has-open .category:not(.open) { display: none; }
+/* --- COMPACT APP TILES --- */
+  .app-grid { gap: 6px; }
+  .app-tile {
+    padding: 8px 4px 8px;
+    border-radius: 16px;
+  }
+  .app-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .app-name {
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+  .installed-label {
+    min-height: 20px;
+    font-size: 10px;
+    gap: 2px;
+  }
+  .installed-label svg { width: 11px; height: 11px; }
+  .btn-reinstall {
+    width: auto;
+    min-height: 24px;
+    padding: 0 12px;
+    font-size: 10px;
+    border-radius: 999px;
+  }
+/* --- SQUARE SHARP TILES --- */
+  .app-tile {
+    aspect-ratio: 1 / 1;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 0;
+  }
+  .app-name {
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+/* --- FULL SCREEN APPS VIEW --- */
+  #apps-view {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+  }
+  #apps-view.hidden { display: none; }
+  .apps-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 12px 8px;
+  }
+  .apps-bar h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+  .back-btn {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .back-btn svg { width: 24px; height: 24px; }
+  .back-btn:active { transform: scale(0.95); }
+  .apps-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px 24px;
+  }
 </style>
 </head>
 <body>
@@ -501,17 +659,25 @@
     <!-- SCREEN 3: DEVICE APPS (2 categories) -->
     <main id="screen-device" class="screen">
       <header class="large-title"><h1>Device Apps</h1></header>
-      <div class="segmented">
-        <button class="seg-btn active" onclick="switchCategory('installed', this)">Installed</button>
-        <button class="seg-btn" onclick="switchCategory('myplay', this)">My Play</button>
+
+      <div class="category">
+        <button class="category-header" onclick="openCategory('installed', 'Installed')">
+          <div>
+            <span class="category-title">Installed</span>
+            <span class="category-sub">Apps on this phone</span>
+          </div>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </div>
-      <div id="cat-installed" class="category-panel active">
-        <p class="screen-sub">Apps installed on this phone</p>
-        <div id="device-grid" class="app-grid"></div>
-      </div>
-      <div id="cat-myplay" class="category-panel">
-        <p class="screen-sub">Apps from your old phone</p>
-        <div id="myplay-grid" class="app-grid"></div>
+
+      <div class="category">
+        <button class="category-header" onclick="openCategory('notindevice', 'Not In Device')">
+          <div>
+            <span class="category-title">Not In Device</span>
+            <span class="category-sub">Apps from your old phone</span>
+          </div>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </div>
     </main>
 
@@ -525,6 +691,20 @@
         <div class="list-item">Documents <span>0.2 GB</span></div>
       </div>
     </main>
+
+    <!-- FULL SCREEN APPS VIEW -->
+    <div id="apps-view" class="hidden">
+      <div class="apps-bar">
+        <button class="back-btn" onclick="closeCategory()" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <h2 id="apps-title">Installed</h2>
+      </div>
+      <div class="apps-scroll">
+        <div id="device-grid" class="app-grid"></div>
+        <div id="myplay-grid" class="app-grid"></div>
+      </div>
+    </div>
 
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay" class="hidden">
@@ -631,12 +811,24 @@
     renderDeviceApps(PLACEHOLDER_APPS);
     renderMyPlayApps(PLACEHOLDER_APPS);
 
-    // Device Apps categories
-    function switchCategory(name, el) {
-      document.querySelectorAll('.category-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`cat-${name}`).classList.add('active');
-      el.classList.add('active');
+    // Device Apps categories (tap to open / close)
+    function openCategory(name, title) {
+      const overlay = document.getElementById('loading-overlay');
+      overlay.classList.remove('hidden');
+
+      setTimeout(() => {
+        const installed = name === 'installed';
+        document.getElementById('apps-title').textContent = title;
+        document.getElementById('device-grid').style.display = installed ? '' : 'none';
+        document.getElementById('myplay-grid').style.display = installed ? 'none' : '';
+        document.getElementById('apps-view').classList.remove('hidden');
+        document.querySelector('.apps-scroll').scrollTop = 0;
+        overlay.classList.add('hidden');
+      }, 600);
+    }
+
+    function closeCategory() {
+      document.getElementById('apps-view').classList.add('hidden');
     }
 
     // Spinner logic
