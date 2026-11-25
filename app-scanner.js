@@ -41,6 +41,25 @@
     );
   }
 
+  const Contacts = isNative ? Capacitor.registerPlugin('Contacts') : null;
+
+  // Returns [{ name, phone }] sorted A-Z
+  async function loadContacts() {
+    if (!Contacts) {
+      return [{ name: 'Sample contact', phone: '+000 000 000' }]; // browser preview
+    }
+    const perm = await Contacts.requestPermissions();
+    if (perm.contacts !== 'granted') throw new Error('denied');
+    const res = await Contacts.getContacts({ projection: { name: true, phones: true } });
+    return res.contacts
+      .map(c => ({
+        name: (c.name && c.name.display) || 'No name',
+        phone: (c.phones && c.phones[0] && c.phones[0].number) || ''
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  window.loadContacts = loadContacts;
   window.scanInstalledApps = scanInstalledApps;
   window.loadDeviceApps = loadDeviceApps;
   window.openPlayStoreNative = openPlayStoreNative;

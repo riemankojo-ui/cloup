@@ -704,13 +704,13 @@
 
       <h2 class="section-title">Backup Now</h2>
       <div class="grid-2x2">
-  <div class="card category-card">
+  <div class="card category-card" onclick="openContacts()">
     <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
       <circle cx="12" cy="7" r="4"></circle>
     </svg>
     <div class="cat-name">Contacts</div>
-    <div class="cat-stat">342</div>
+    <div class="cat-stat" id="contacts-count">Tap to load</div>
   </div>
   <div class="card category-card">
     <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -816,6 +816,8 @@
       <div class="apps-scroll">
         <div id="device-grid" class="app-grid"></div>
         <div id="myplay-grid" class="app-grid"></div>
+        <div id="contacts-grid" class="app-grid" style="display:none"></div>
+        <div id="contacts-grid" class="app-grid" style="display:none"></div>
       </div>
     </div>
 
@@ -943,10 +945,37 @@ function openSettings() {
         document.getElementById('apps-title').textContent = title;
         document.getElementById('device-grid').style.display = installed ? '' : 'none';
         document.getElementById('myplay-grid').style.display = installed ? 'none' : '';
+        document.getElementById('contacts-grid').style.display = 'none';
         document.getElementById('apps-view').classList.remove('hidden');
         document.querySelector('.apps-scroll').scrollTop = 0;
         overlay.classList.add('hidden');
       }, 300);
+    }
+
+    async function openContacts() {
+      const overlay = document.getElementById('loading-overlay');
+      overlay.classList.remove('hidden');
+      try {
+        const contacts = await loadContacts();
+        document.getElementById('apps-title').textContent = 'Contacts';
+        document.getElementById('device-grid').style.display = 'none';
+        document.getElementById('myplay-grid').style.display = 'none';
+        const grid = document.getElementById('contacts-grid');
+        grid.style.display = '';
+        grid.innerHTML = contacts.map(c => `
+          <div class="app-tile">
+            ${logoHtml({ name: c.name, color: '#1A73E8' })}
+            <div class="app-name">${escapeHtml(c.name)}</div>
+            <div class="installed-label">${escapeHtml(c.phone)}</div>
+          </div>`).join('');
+        document.getElementById('contacts-count').textContent = contacts.length;
+        document.getElementById('apps-view').classList.remove('hidden');
+        document.querySelector('.apps-scroll').scrollTop = 0;
+      } catch (err) {
+        alert('Allow the Contacts permission to see your contacts.');
+      } finally {
+        overlay.classList.add('hidden');
+      }
     }
 
     function closeCategory() {
