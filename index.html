@@ -675,6 +675,8 @@
 </style>
 </head>
 <body>
+<div id="cloup-boot" style="position:fixed;inset:0;z-index:9998;background:#1C1C1E"></div>
+<script>try{if(localStorage.getItem('cloup_session'))document.getElementById('cloup-boot').remove();}catch(e){}setTimeout(function(){var b=document.getElementById('cloup-boot');if(b)b.remove();},4000);</script>
 
   <div class="app-container">
     
@@ -863,6 +865,7 @@
   </div>
 
   <script src="app-scanner.js"></script>
+  <script src="auth.js"></script>
   <script src="cloud.js"></script>
   <script>
     // Tab switching logic

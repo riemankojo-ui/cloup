@@ -58,22 +58,24 @@ jobs:
           if [ -d "$GITHUB_WORKSPACE/native" ]; then
             cp -r "$GITHUB_WORKSPACE/native" native
             sed -i "s/^package .*;/package $APP_ID;/" native/*.java
-            sed -i "s|com/rieman/softplayer|$(echo "$APP_ID" | tr . /)|" native/patch.py
-            python3 native/patch.py
-            if [ -f native/icon.py ]; then python3 native/icon.py; fi
+            sed -i "s|com/rieman/softplayer|$(echo "$APP_ID" | tr . /)|" native/native/patch.py
+            python3 native/native/patch.py
+            if [ -f native/native/icon.py ]; then python3 native/native/icon.py; fi
             sed -i "s|mavenCentral()|mavenCentral()\n        maven { url 'https://jitpack.io' }|g" android/build.gradle
-            npm install @capacitor/app@8
+            npm install @capacitor/app@8 @capgo/capacitor-social-login@8
           fi
           if [ -f "$GITHUB_WORKSPACE/FolderAccessPlugin.java" ]; then
             PKG_DIR="android/app/src/main/java/$(echo "$APP_ID" | tr . /)"
             mkdir -p "$PKG_DIR"
             sed "s/^package .*/package $APP_ID;/" "$GITHUB_WORKSPACE/FolderAccessPlugin.java" > "$PKG_DIR/FolderAccessPlugin.java"
-            printf '%s\n' "package $APP_ID;" "" "import android.os.Bundle;" "import com.getcapacitor.BridgeActivity;" "" "public class MainActivity extends BridgeActivity {" "    @Override" "    public void onCreate(Bundle savedInstanceState) {" "        registerPlugin(FolderAccessPlugin.class);" "        super.onCreate(savedInstanceState);" "    }" "}" > "$PKG_DIR/MainActivity.java"
+            printf '%s\n' "package $APP_ID;" "" "import android.os.Bundle;" "import com.getcapacitor.BridgeActivity;" "" "public class MainActivity extends BridgeActivity {" "    @Override" "    public void onCreate(Bundle savedInstanceState) {" "        registerPlugin(FolderAccessPlugin.class);" "        super.onCreate(savedInstanceState);" "    }" "}" > "$PKG_DIR/native/MainActivity.java"
           fi
           npx cap sync android
           sed -i "s/versionName \".*\"/versionName \"$VERSION\"/; s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" android/app/build.gradle
       - name: Build debug APK
         run: |
+          mkdir -p ~/.android
+          if [ -f "$GITHUB_WORKSPACE/debug.keystore" ]; then cp "$GITHUB_WORKSPACE/debug.keystore" ~/.android/debug.keystore; fi
           cd "$RUNNER_TEMP/cap/android"
           chmod +x gradlew
           ./gradlew assembleDebug
