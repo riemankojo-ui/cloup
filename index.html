@@ -732,14 +732,14 @@
 </div>
 </div>
 
-      <button class="btn-primary" onclick="showLoading()">
+      <button class="btn-primary" onclick="cloudBackup()">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 6px;">
     <polyline points="23 4 23 10 17 10"></polyline>
     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
   </svg>
   BACKUP ALL NOW
 </button>
-      <p class="last-backup">Last backup: Today 2:14 PM</p>
+      <p class="last-backup" id="last-backup">Last backup: never</p>
     </main>
 
     <!-- SCREEN 2: RESTORE -->
@@ -753,7 +753,7 @@
 </svg>
         <h2>Restore to this phone</h2>
         <p>Tap below to pull your files, contacts, and apps from the cloud.</p>
-        <button class="btn-secondary" onclick="showLoading()">DROP HERE</button>
+        <button class="btn-secondary" onclick="cloudRestore()">DROP HERE</button>
       </div>
     </main>
 
@@ -863,6 +863,7 @@
   </div>
 
   <script src="app-scanner.js"></script>
+  <script src="cloud.js"></script>
   <script>
     // Tab switching logic
 function switchTab(tabName, el) {
