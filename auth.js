@@ -1,4 +1,3 @@
-// Cloup: Create account / Log in / Continue with Google
 // Builds its own screen, so index.html only needs one script tag.
 (function () {
   const SB_URL = 'https://wunxnpjpdcpvhvghgxxx.supabase.co';
@@ -82,14 +81,14 @@
 
   // ---------- screen ----------
   const CSS = `
-  #cloup-auth{position:fixed;inset:0;z-index:9999;overflow-y:auto;color:#fff;
+  #cloup-auth{position:fixed;inset:0;z-index:9999;overflow-y:auto;color:#fff;box-sizing:border-box;padding:calc(20px + env(safe-area-inset-top,0px)) 24px calc(20px + env(safe-area-inset-bottom,0px));
     background:linear-gradient(180deg,#1C1C1E,#121212);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
   #cloup-auth.hidden{display:none}
   #cloup-auth .ca-wrap{min-height:100%;max-width:420px;margin:0 auto;box-sizing:border-box;display:flex;
     flex-direction:column;justify-content:center;
-    padding:max(28px,env(safe-area-inset-top)) 24px max(28px,env(safe-area-inset-bottom))}
+    padding:28px 24px;padding-top:calc(28px + env(safe-area-inset-top,0px));padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
   #cloup-auth .ca-logo{width:64px;height:64px;border-radius:20px;background:#2C2C2E;border:1px solid #3A3A3C;
     display:flex;align-items:center;justify-content:center;color:#34C759;margin:0 auto 16px}
   #cloup-auth h1{font-size:28px;font-weight:700;text-align:center;margin:0 0 6px}
@@ -161,7 +160,7 @@
       forgot: ['Reset password', 'We will email you a reset link'],
       reset: ['New password', 'Choose a new password for your account']
     };
-    let h = '<div class="ca-wrap"><div class="ca-logo">' + ICON_CLOUD + '</div>' +
+    let h = '<img src="logo2.png" alt="Cloup" style="display:block;width:120px;height:120px;margin:0 auto 8px">' +
       '<h1>' + titles[m][0] + '</h1><p class="ca-sub">' + titles[m][1] + '</p>';
     if (m === 'login' || m === 'signup') {
       h += '<div class="ca-seg"><button data-mode="login" class="' + (m === 'login' ? 'on' : '') + '">Log in</button>' +
