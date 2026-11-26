@@ -1,6 +1,9 @@
-package com.cloup.app; // <-- change to your appId (see capacitor.config)
+package com.cloup.app;
 
+import android.Manifest;
 import android.content.Intent;
+import android.database.Cursor;
+import android.provider.ContactsContract;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -13,7 +16,10 @@ import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.io.ByteArrayOutputStream;
@@ -27,7 +33,10 @@ import java.util.Set;
  * Reads the apps shown in the phone's app drawer (name, package, icon)
  * and builds a Google Play link for each one. No APKs are touched.
  */
-@CapacitorPlugin(name = "AppScanner")
+@CapacitorPlugin(
+    name = "AppScanner",
+    permissions = { @Permission(strings = { Manifest.permission.READ_CONTACTS }, alias = "contacts") }
+)
 public class AppScannerPlugin extends Plugin {
 
     /**
@@ -106,6 +115,63 @@ public class AppScannerPlugin extends Plugin {
             } catch (Exception e2) {
                 call.reject("Could not open the Play Store: " + e2.getMessage());
             }
+        }
+    }
+
+    @PluginMethod
+    public void getContacts(PluginCall call) {
+        if (getPermissionState("contacts") != PermissionState.GRANTED) {
+            requestPermissionForAlias("contacts", call, "contactsPermsCallback");
+        } else {
+            readContacts(call);
+        }
+    }
+
+    @PermissionCallback
+    private void contactsPermsCallback(PluginCall call) {
+        if (getPermissionState("contacts") == PermissionState.GRANTED) {
+            readContacts(call);
+        } else {
+            call.reject("denied");
+        }
+    }
+
+    private void readContacts(PluginCall call) {
+        try {
+            JSArray list = new JSArray();
+            Set<String> seen = new HashSet<>();
+            Cursor c = getContext().getContentResolver().query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[] {
+                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                    ContactsContract.CommonDataKinds.Phone.NUMBER
+                },
+                null, null,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE NOCASE ASC"
+            );
+            if (c != null) {
+                try {
+                    while (c.moveToNext()) {
+                        String name = c.getString(0);
+                        String phone = c.getString(1);
+                        if (name == null) name = "No name";
+                        if (phone == null) phone = "";
+                        if (!seen.add(name + "|" + phone.replaceAll("\\s", ""))) continue;
+                        JSObject o = new JSObject();
+                        o.put("name", name);
+                        o.put("phone", phone);
+                        list.put(o);
+                    }
+                } finally {
+                    c.close();
+                }
+            }
+            JSObject result = new JSObject();
+            result.put("count", list.length());
+            result.put("contacts", list);
+            call.resolve(result);
+        } catch (Exception e) {
+            call.reject("Could not read contacts: " + e.getMessage());
         }
     }
 
