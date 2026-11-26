@@ -1,6 +1,14 @@
 package com.cloup.app;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.ClipData;
+import android.content.ContentUris;
+import android.os.Build;
+import android.provider.MediaStore;
+import android.os.Environment;
+import android.os.StatFs;
+import android.provider.OpenableColumns;
 import android.content.Intent;
 import android.database.Cursor;
 import android.provider.ContactsContract;
@@ -16,13 +24,16 @@ import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
+import androidx.activity.result.ActivityResult;
 import com.getcapacitor.PermissionState;
+import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +46,15 @@ import java.util.Set;
  */
 @CapacitorPlugin(
     name = "AppScanner",
-    permissions = { @Permission(strings = { Manifest.permission.READ_CONTACTS }, alias = "contacts") }
+    permissions = {
+        @Permission(strings = { Manifest.permission.READ_CONTACTS }, alias = "contacts"),
+        @Permission(strings = {
+            "android.permission.READ_MEDIA_IMAGES",
+            "android.permission.READ_MEDIA_VIDEO",
+            "android.permission.READ_MEDIA_AUDIO"
+        }, alias = "mediaNew"),
+        @Permission(strings = { Manifest.permission.READ_EXTERNAL_STORAGE }, alias = "mediaOld")
+    }
 )
 public class AppScannerPlugin extends Plugin {
 
@@ -172,6 +191,146 @@ public class AppScannerPlugin extends Plugin {
             call.resolve(result);
         } catch (Exception e) {
             call.reject("Could not read contacts: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void getStorageInfo(PluginCall call) {
+        try {
+            StatFs s = new StatFs(Environment.getDataDirectory().getPath());
+            long total = s.getTotalBytes();
+            long free = s.getAvailableBytes();
+            JSObject o = new JSObject();
+            o.put("total", total);
+            o.put("free", free);
+            o.put("used", total - free);
+            call.resolve(o);
+        } catch (Exception e) {
+            call.reject("Could not read storage: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void pickFiles(PluginCall call) {
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("*/*");
+        i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        startActivityForResult(call, i, "pickFilesResult");
+    }
+
+    @ActivityCallback
+    private void pickFilesResult(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        try {
+            JSArray files = new JSArray();
+            Intent data = result.getData();
+            if (result.getResultCode() == Activity.RESULT_OK && data != null) {
+                List<Uri> uris = new ArrayList<>();
+                ClipData cd = data.getClipData();
+                if (cd != null) {
+                    for (int k = 0; k < cd.getItemCount(); k++) uris.add(cd.getItemAt(k).getUri());
+                } else if (data.getData() != null) {
+                    uris.add(data.getData());
+                }
+                for (Uri u : uris) {
+                    String name = "File";
+                    long size = 0;
+                    Cursor c = getContext().getContentResolver().query(u, null, null, null, null);
+                    if (c != null) {
+                        try {
+                            if (c.moveToFirst()) {
+                                int ni = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                                int si = c.getColumnIndex(OpenableColumns.SIZE);
+                                if (ni >= 0 && !c.isNull(ni)) name = c.getString(ni);
+                                if (si >= 0 && !c.isNull(si)) size = c.getLong(si);
+                            }
+                        } finally {
+                            c.close();
+                        }
+                    }
+                    JSObject o = new JSObject();
+                    o.put("name", name);
+                    o.put("size", size);
+                    o.put("uri", u.toString());
+                    files.put(o);
+                }
+            }
+            JSObject r = new JSObject();
+            r.put("count", files.length());
+            r.put("files", files);
+            call.resolve(r);
+        } catch (Exception e) {
+            call.reject("Could not read files: " + e.getMessage());
+        }
+    }
+
+    private String mediaAlias() {
+        return Build.VERSION.SDK_INT >= 33 ? "mediaNew" : "mediaOld";
+    }
+
+    @PluginMethod
+    public void getMediaFiles(PluginCall call) {
+        if (getPermissionState(mediaAlias()) != PermissionState.GRANTED) {
+            requestPermissionForAlias(mediaAlias(), call, "mediaPermsCallback");
+        } else {
+            readMedia(call);
+        }
+    }
+
+    @PermissionCallback
+    private void mediaPermsCallback(PluginCall call) {
+        if (getPermissionState(mediaAlias()) == PermissionState.GRANTED) {
+            readMedia(call);
+        } else {
+            call.reject("denied");
+        }
+    }
+
+    private void readMedia(PluginCall call) {
+        try {
+            int limit = call.getInt("limit", 300);
+            Uri base = MediaStore.Files.getContentUri("external");
+            String[] proj = {
+                MediaStore.Files.FileColumns._ID,
+                MediaStore.Files.FileColumns.DISPLAY_NAME,
+                MediaStore.Files.FileColumns.SIZE,
+                MediaStore.Files.FileColumns.MEDIA_TYPE
+            };
+            String sel = MediaStore.Files.FileColumns.MEDIA_TYPE + " IN (1,2,3)";
+            Cursor c = getContext().getContentResolver().query(
+                base, proj, sel, null, MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
+            );
+            JSArray files = new JSArray();
+            long total = 0;
+            int count = 0;
+            if (c != null) {
+                try {
+                    while (c.moveToNext()) {
+                        long size = c.isNull(2) ? 0 : c.getLong(2);
+                        total += size;
+                        count++;
+                        if (files.length() < limit) {
+                            int t = c.getInt(3);
+                            JSObject o = new JSObject();
+                            o.put("name", c.isNull(1) ? "File" : c.getString(1));
+                            o.put("size", size);
+                            o.put("type", t == 1 ? "image" : (t == 2 ? "audio" : "video"));
+                            o.put("uri", ContentUris.withAppendedId(base, c.getLong(0)).toString());
+                            files.put(o);
+                        }
+                    }
+                } finally {
+                    c.close();
+                }
+            }
+            JSObject r = new JSObject();
+            r.put("count", count);
+            r.put("totalSize", total);
+            r.put("files", files);
+            call.resolve(r);
+        } catch (Exception e) {
+            call.reject("Could not read files: " + e.getMessage());
         }
     }
 

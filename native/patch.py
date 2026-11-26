@@ -18,12 +18,19 @@ queries = (
     "        </intent>\n"
     "    </queries>"
 )
-perm = '<uses-permission android:name="android.permission.READ_CONTACTS" />'
+perms = [
+    ("READ_CONTACTS", '<uses-permission android:name="android.permission.READ_CONTACTS" />'),
+    ("READ_MEDIA_IMAGES", '<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />'),
+    ("READ_MEDIA_VIDEO", '<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />'),
+    ("READ_MEDIA_AUDIO", '<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />'),
+    ("READ_EXTERNAL_STORAGE", '<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />'),
+]
 
 if "<queries>" not in m:
     m = m.replace("<application", queries + "\n    <application", 1)
-if "READ_CONTACTS" not in m:
-    m = m.replace("<application", perm + "\n    <application", 1)
+for key, line in perms:
+    if key not in m:
+        m = m.replace("<application", line + "\n    <application", 1)
 
 open(manifest, "w", encoding="utf-8").write(m)
 print("Cloup native patch done")

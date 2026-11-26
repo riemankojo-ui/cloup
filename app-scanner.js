@@ -29,6 +29,9 @@
     } catch (err) {
       console.error('App scan failed:', err);
       renderDeviceApps([]);
+      const eg = document.getElementById('device-grid');
+      if (eg) eg.innerHTML = '<p style="padding:16px;color:#E53935">Scan failed: ' +
+        ((err && err.message) || String(err)) + '</p>';
     }
   }
 

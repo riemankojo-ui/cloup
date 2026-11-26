@@ -717,7 +717,7 @@
       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
     </svg>
     <div class="cat-name">Files</div>
-    <div class="cat-stat">1.2 GB</div>
+    <div class="cat-stat" id="files-stat">Tap to pick</div>
   </div>
   <div class="card category-card">
   <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -934,6 +934,11 @@ function openSettings() {
     loadDeviceApps();
     renderMyPlayApps(PLACEHOLDER_APPS);
 
+    document.getElementById('files-stat').parentNode.onclick = openFiles;
+    loadStorage().then(s => {
+      if (s) document.getElementById('files-stat').textContent = fmtBytes(s.used) + ' used';
+    }).catch(() => {});
+
     // Device Apps categories (tap to open / close)
     function openCategory(name, title) {
       const overlay = document.getElementById('loading-overlay');
@@ -945,10 +950,52 @@ function openSettings() {
         document.getElementById('device-grid').style.display = installed ? '' : 'none';
         document.getElementById('myplay-grid').style.display = installed ? 'none' : '';
         document.getElementById('contacts-grid').style.display = 'none';
+        const fg0 = document.getElementById('files-grid');
+        if (fg0) fg0.style.display = 'none';
         document.getElementById('apps-view').classList.remove('hidden');
         document.querySelector('.apps-scroll').scrollTop = 0;
         overlay.classList.add('hidden');
       }, 300);
+    }
+
+    function fmtBytes(n) {
+      if (!n) return '0 B';
+      const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
+      return (n / Math.pow(1024, i)).toFixed(i ? 1 : 0) + ' ' + u[i];
+    }
+
+    async function openFiles() {
+      const overlay = document.getElementById('loading-overlay');
+      try {
+        const files = await pickPhoneFiles();
+        if (!files.length) return;
+        overlay.classList.remove('hidden');
+        let grid = document.getElementById('files-grid');
+        if (!grid) {
+          grid = document.createElement('div');
+          grid.id = 'files-grid';
+          grid.className = 'app-grid';
+          document.getElementById('myplay-grid').parentNode.appendChild(grid);
+        }
+        document.getElementById('apps-title').textContent = 'Files';
+        document.getElementById('device-grid').style.display = 'none';
+        document.getElementById('myplay-grid').style.display = 'none';
+        document.getElementById('contacts-grid').style.display = 'none';
+        grid.style.display = '';
+        grid.innerHTML = files.map(f => `
+          <div class="app-tile">
+            ${logoHtml({ name: (f.name.split('.').pop() || 'F'), color: '#F9AB00' })}
+            <div class="app-name">${escapeHtml(f.name)}</div>
+            <div class="installed-label">${fmtBytes(f.size)}</div>
+          </div>`).join('');
+        document.getElementById('apps-view').classList.remove('hidden');
+        document.querySelector('.apps-scroll').scrollTop = 0;
+      } catch (err) {
+        alert('Files failed: ' + ((err && err.message) || err));
+      } finally {
+        overlay.classList.add('hidden');
+      }
     }
 
     async function openContacts() {
@@ -959,6 +1006,8 @@ function openSettings() {
         document.getElementById('apps-title').textContent = 'Contacts';
         document.getElementById('device-grid').style.display = 'none';
         document.getElementById('myplay-grid').style.display = 'none';
+        const fg1 = document.getElementById('files-grid');
+        if (fg1) fg1.style.display = 'none';
         const grid = document.getElementById('contacts-grid');
         grid.style.display = '';
         grid.innerHTML = contacts.map(c => `
@@ -971,7 +1020,7 @@ function openSettings() {
         document.getElementById('apps-view').classList.remove('hidden');
         document.querySelector('.apps-scroll').scrollTop = 0;
       } catch (err) {
-        alert('Allow the Contacts permission to see your contacts.');
+        alert('Contacts failed: ' + ((err && err.message) || err));
       } finally {
         overlay.classList.add('hidden');
       }
