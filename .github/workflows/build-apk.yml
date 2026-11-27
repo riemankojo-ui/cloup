@@ -58,9 +58,9 @@ jobs:
           if [ -d "$GITHUB_WORKSPACE/native" ]; then
             cp -r "$GITHUB_WORKSPACE/native" native
             sed -i "s/^package .*;/package $APP_ID;/" native/*.java
-            sed -i "s|com/rieman/softplayer|$(echo "$APP_ID" | tr . /)|" native/native/patch.py
-            python3 native/native/patch.py
-            if [ -f native/native/icon.py ]; then python3 native/native/icon.py; fi
+            sed -i "s|com/rieman/softplayer|$(echo "$APP_ID" | tr . /)|" native/patch.py
+            python3 native/patch.py
+            if [ -f native/icon.py ]; then python3 native/icon.py; fi
             sed -i "s|mavenCentral()|mavenCentral()\n        maven { url 'https://jitpack.io' }|g" android/build.gradle
             npm install @capacitor/app@8 @capgo/capacitor-social-login@8
           fi
