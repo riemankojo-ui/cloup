@@ -32,5 +32,7 @@ for key, line in perms:
     if key not in m:
         m = m.replace("<application", line + "\n    <application", 1)
 
+if 'android:scheme="cloup"' not in m:
+    m = m.replace("</activity>", '<intent-filter><action android:name="android.intent.action.VIEW" /><category android:name="android.intent.category.DEFAULT" /><category android:name="android.intent.category.BROWSABLE" /><data android:scheme="cloup" android:host="auth" /></intent-filter></activity>', 1)
 open(manifest, "w", encoding="utf-8").write(m)
 print("Cloup native patch done")

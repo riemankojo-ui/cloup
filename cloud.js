@@ -29,7 +29,7 @@
         return s;
       } catch (e) { /* fall through to login */ }
     }
-    const email = prompt('Email for your Cloup account:');
+    s = await window.CloupAuth.require(); return s;
     if (!email) throw new Error('Cancelled');
     const password = prompt('Password (min 6 characters):');
     if (!password) throw new Error('Cancelled');
